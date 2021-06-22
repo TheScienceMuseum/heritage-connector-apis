@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sparqlwrapper
+elasticsearch
+
+# dev
+pre-commit
+black
+flake8
