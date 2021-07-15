@@ -6,6 +6,7 @@ To run: `python api.py`
 
 import argparse
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic.networks import HttpUrl
 import uvicorn
 from api_utils import config, logging, db_connectors, sparql
@@ -17,6 +18,14 @@ es_connector = db_connectors.ElasticsearchConnector(
     cfg.ELASTIC_SEARCH_CLUSTER, cfg.ELASTIC_SEARCH_USER, cfg.ELASTIC_SEARCH_PASSWORD
 )
 sparql_connector = db_connectors.SPARQLConnector()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
