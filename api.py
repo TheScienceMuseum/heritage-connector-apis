@@ -4,6 +4,7 @@ REST API for Heritage Connector.
 To run: `python api.py`
 """
 
+import argparse
 from fastapi import FastAPI
 from pydantic.networks import HttpUrl
 import uvicorn
@@ -33,4 +34,12 @@ async def get_predicate_object(uri: HttpUrl):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-p", "--port", type=int, help="Optional port (default 8000)", default=8000
+    )
+
+    args = parser.parse_args()
+    port = args.port
+
+    uvicorn.run(app, host="0.0.0.0", port=port)
