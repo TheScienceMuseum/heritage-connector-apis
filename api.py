@@ -26,11 +26,11 @@ async def startup():
 
 @app.get("/predicate_object/by_uri")
 @app.post("/predicate_object/by_uri")
-async def get_predicate_object(uri: HttpUrl):
+async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     # TODO: return correct error if URL not in database
-    return sparql_connector.get_sparql_results(sparql.get_p_o(uri))["results"][
-        "bindings"
-    ]
+    return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
+        "results"
+    ]["bindings"]
 
 
 if __name__ == "__main__":
