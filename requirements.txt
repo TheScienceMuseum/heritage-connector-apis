@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sparqlwrapper
 elasticsearch
+requests
 
 # dev
 pre-commit

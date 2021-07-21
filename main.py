@@ -5,8 +5,12 @@ To run: `python api.py`
 """
 
 import argparse
+import requests
+import json
+from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from pydantic.networks import HttpUrl
 import uvicorn
 from api_utils import config, logging, db_connectors, sparql
@@ -40,6 +44,29 @@ async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
         "results"
     ]["bindings"]
+
+
+class NeighboursRequest(BaseModel):
+    entities: List[str]
+    k: int
+
+
+@app.get("/neighbours")
+@app.post("/neighbours")
+async def get_neighbours(request: NeighboursRequest):
+    neighbours_api_endpoint = cfg.NEIGHBOURS_API
+    body = json.dumps(
+        {
+            "entities": request.entities,
+            "k": request.k,
+        }
+    )
+    headers = {
+        "Content-Type": "application/json",
+    }
+    response = requests.post(neighbours_api_endpoint, headers=headers, data=body)
+
+    return response.json()
 
 
 if __name__ == "__main__":
