@@ -1,6 +1,9 @@
 # Repo-specific
 config.ini
 
+# Deta files (API deployment)
+.deta
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
