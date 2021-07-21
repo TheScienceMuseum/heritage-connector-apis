@@ -1,5 +1,6 @@
 """Submodule for SPARQL queries
 """
+from typing import List
 
 
 def get_p_o(h: str, labels: bool):
@@ -12,3 +13,14 @@ def get_p_o(h: str, labels: bool):
             }}"""
     else:
         return f"""SELECT * WHERE {{<{h}> ?predicate ?object.}}"""
+
+
+def get_labels(entities: List[str]):
+    ent_str = " ".join([f"<{ent}>" for ent in entities])
+
+    return f"""PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT ?s ?sLabel WHERE {{
+        VALUES ?s {{{ent_str}}}.
+        OPTIONAL {{?s rdfs:label ?sLabel}}.
+    }} """

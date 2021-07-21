@@ -38,9 +38,9 @@ async def startup():
 
 
 @app.get("/predicate_object/by_uri")
-@app.post("/predicate_object/by_uri")
 async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     # TODO: return correct error if URL not in database
+    # TODO: re-enable POST by adding data model as in /neighbours and /labels
     return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
         "results"
     ]["bindings"]
@@ -67,6 +67,24 @@ async def get_neighbours(request: NeighboursRequest):
     response = requests.post(neighbours_api_endpoint, headers=headers, data=body)
 
     return response.json()
+
+
+class LabelsRequest(BaseModel):
+    uris: List[HttpUrl]
+
+
+@app.get("/labels")
+@app.post("/labels")
+async def get_labels(request: LabelsRequest):
+    results = sparql_connector.get_sparql_results(sparql.get_labels(request.uris))[
+        "results"
+    ]["bindings"]
+    response = {k: None for k in request.uris}
+
+    for res in results:
+        response[res["s"]["value"]] = res["sLabel"]["value"]
+
+    return response
 
 
 if __name__ == "__main__":
