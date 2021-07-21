@@ -38,6 +38,7 @@ async def startup():
 
 
 @app.get("/predicate_object/by_uri")
+@app.post("/predicate_object/by_uri")
 async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     # TODO: return correct error if URL not in database
     # TODO: re-enable POST by adding data model as in /neighbours and /labels
