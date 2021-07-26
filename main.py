@@ -83,7 +83,7 @@ async def get_labels(request: LabelsRequest):
     response = {k: None for k in request.uris}
 
     for res in results:
-        response[res["s"]["value"]] = res["sLabel"]["value"]
+        response[res["s"]["value"]] = res.get("sLabel", {}).get("value")
 
     return response
 
