@@ -70,6 +70,39 @@ async def get_neighbours(request: NeighboursRequest):
     return response.json()
 
 
+class ConnectionsRequest(BaseModel):
+    entities: List[str]
+    labels: bool = False
+
+
+@app.get("/connections")
+@app.post("/connections")
+async def get_connections(request: ConnectionsRequest):
+    """Get connections from or to each entity in the request."""
+
+    response = {}
+
+    for ent in request.entities:
+        connections_from = sparql_connector.get_sparql_results(
+            sparql.get_p_o(ent, labels=request.labels)
+        )["results"]["bindings"]
+
+        connections_to = sparql_connector.get_sparql_results(
+            sparql.get_s_p(ent, labels=request.labels)
+        )["results"]["bindings"]
+
+        response.update(
+            {
+                ent: {
+                    "from": connections_from,
+                    "to": connections_to,
+                }
+            }
+        )
+
+    return response
+
+
 class LabelsRequest(BaseModel):
     uris: List[HttpUrl]
 
