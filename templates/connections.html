@@ -29,7 +29,7 @@
 </head>
 <body>
     {% macro printConnectionsFrom(connections) -%}
-    <ul class="list pl0 measure">
+    <ul class="list pl0 measure-wide">
         {% for groupName in connections %}
             <h3>{{groupName}}</h3>
             {% for item in connections[groupName] %}
@@ -40,7 +40,7 @@
     {%- endmacro %}
     
     {% macro printConnectionsTo(connections) -%}
-    <ul class="list pl0 measure">
+    <ul class="list pl0 measure-wide">
         {% for groupName in connections %}
             <h3>{{groupName}}</h3>
             {% for item in connections[groupName] %}
