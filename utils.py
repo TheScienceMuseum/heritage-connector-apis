@@ -24,6 +24,9 @@ predicateAbbreviationMapping = {
     "https://collection.sciencemuseumgroup.org.uk/documents/": "SMGD",
     "https://blog.sciencemuseum.org.uk/": "SMGBLOG",
     "http://journal.sciencemuseum.ac.uk/browse/": "SMGJOURNAL",
+    "https://api.vam.ac.uk/v2/objects/search?id_organisation=": "VAMORG",
+    "https://api.vam.ac.uk/v2/objects/search?id_person=": "VAMPERSON",
+    "http://collections.vam.ac.uk/item/": "VAMOBJECT",
 }
 
 predicateManualGroups = {
