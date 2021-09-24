@@ -7,13 +7,16 @@ To run: `python api.py`
 import argparse
 import requests
 import json
+import re
 from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pydantic.networks import HttpUrl
 import uvicorn
 from api_utils import config, logging, db_connectors, sparql
+import utils
 
 logger = logging.get_logger(__name__)
 cfg = config.config
@@ -30,6 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+templates = Jinja2Templates(directory="templates")
+templates.env.filters["abbreviateURI"] = utils.abbreviateURI
 
 
 @app.on_event("startup")
@@ -101,6 +107,140 @@ async def get_connections(request: ConnectionsRequest):
         )
 
     return response
+
+
+def flatten_connections_response(connections_response, _id):
+    """Process response from the /connections API to a format that can be easily displayed by the jinja2 template
+    at `templates/connections.html`.
+
+    Args:
+        connections_response ([type]): [description]
+        _id ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    flattened_connections_data = {"from": [], "to": []}
+
+    for connection in connections_response[_id].get("from", {}):
+        processed_connection = dict()
+        processed_connection["predicate"] = utils.abbreviateURI(
+            connection["predicate"]["value"]
+        )
+
+        if connection["object"]["type"] == "uri":
+            if "objectLabel" in connection:
+                processed_connection[
+                    "object"
+                ] = f"<a href='?entity={utils.normaliseURI(connection['object']['value'])}'>{connection['objectLabel']['value']} [{utils.abbreviateURI(connection['object']['value'])}]</a>"
+            else:
+                processed_connection[
+                    "object"
+                ] = f"<a href='?entity={utils.normaliseURI(connection['object']['value'])}'>{utils.abbreviateURI(connection['object']['value'])}</a>"
+        else:
+            processed_connection["object"] = connection["object"]["value"]
+
+        flattened_connections_data["from"].append(processed_connection)
+
+    for connection in connections_response[_id].get("to", {}):
+        processed_connection = dict()
+        processed_connection["predicate"] = utils.abbreviateURI(
+            connection["predicate"]["value"]
+        )
+
+        if connection["subject"]["type"] == "uri":
+            if "subjectLabel" in connection:
+                processed_connection[
+                    "subject"
+                ] = f"<a href='?entity={utils.normaliseURI(connection['subject']['value'])}'>{connection['subjectLabel']['value']} [{utils.abbreviateURI(connection['subject']['value'])}]</a>"
+            else:
+                processed_connection[
+                    "subject"
+                ] = f"<a href='?entity={utils.normaliseURI(connection['subject']['value'])}'>{utils.abbreviateURI(connection['subject']['value'])}</a>"
+        else:
+            processed_connection["subject"] = connection["subject"]["value"]
+
+        flattened_connections_data["to"].append(processed_connection)
+
+    return flattened_connections_data
+
+
+def group_flattened_connections(flattened_connections: dict) -> dict:
+    """Group the dict created by `flatten_connections_response` according to the manual groups
+    set in `utils.predicateManualGroups`.
+    """
+
+    # each of the items in the from and to dicts takes the form {"group_name": [data, ...]}
+    grouped_connections = {"from": {}, "to": {}}
+    predicates_in_from = [item["predicate"] for item in flattened_connections["from"]]
+    predicates_in_to = [item["predicate"] for item in flattened_connections["to"]]
+
+    for group_name, abbreviated_predicates in utils.predicateManualGroups.items():
+        from_data = []
+
+        if group_name.startswith("Wikidata connections"):
+            # if Wikidata, only include connections to other Wikidata items that are in the KG.
+            # We can identify these by matching on the HTML link pattern that is used for Wikidata records which have a label (i.e. they are in the Wikidata cache, thus in the KG).
+            for p in abbreviated_predicates:
+                if p in predicates_in_from:
+                    from_data += [
+                        i
+                        for i in flattened_connections["from"]
+                        if (i["predicate"] == p)
+                        and (
+                            len(
+                                re.findall(
+                                    r"<a href='http://www.wikidata.org/entity/Q\d+'>.+\[WD:Q\d+\]</a>",
+                                    i["object"],
+                                )
+                            )
+                            > 0
+                        )
+                    ]
+        else:
+            for p in abbreviated_predicates:
+                if p in predicates_in_from:
+                    from_data += [
+                        i for i in flattened_connections["from"] if i["predicate"] == p
+                    ]
+
+        if from_data:
+            grouped_connections["from"][group_name] = from_data
+
+        to_data = []
+
+        for p in abbreviated_predicates:
+            if p in predicates_in_to:
+                to_data += [
+                    i for i in flattened_connections["to"] if i["predicate"] == p
+                ]
+
+        if to_data:
+            grouped_connections["to"][group_name] = to_data
+
+    return grouped_connections
+
+
+@app.get("/view_connections")
+async def view_connections_single_entity(entity: str):
+    """View HTML template showing connections to and from each entity in the request."""
+
+    connections_request = ConnectionsRequest(
+        entities=[entity],
+        labels=True,
+    )
+    labels_request = LabelsRequest(uris=[entity])
+    label_response = await get_labels(labels_request)
+    ent_label = label_response[entity]
+
+    connections = await get_connections(connections_request)
+    connections_processed = flatten_connections_response(connections, entity)
+    grouped_connections = group_flattened_connections(connections_processed)
+
+    return templates.TemplateResponse(
+        "connections.html",
+        {"request": grouped_connections, "id": entity, "label": ent_label},
+    )
 
 
 class LabelsRequest(BaseModel):

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+    <title>Item Details</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+    <style type="text/css">
+        .list-container {
+            margin-left: 2rem;
+        }
+
+        a {
+        text-decoration: none;
+        transition: color .15s ease-in;
+        }
+
+        a:hover   {
+        transition: color .15s ease-in;
+        }
+        a:active  {
+        transition: color .15s ease-in;
+        }
+        a:focus   {
+        transition: color .15s ease-in;
+        outline: 1px dotted currentColor;
+        }
+    </style>
+</head>
+<body>
+    {% macro printConnectionsFrom(connections) -%}
+    <ul class="list pl0 measure">
+        {% for groupName in connections %}
+            <h3>{{groupName}}</h3>
+            {% for item in connections[groupName] %}
+            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30" style="margin-left:2rem;">this -> {{item.predicate | abbreviateURI}} -> {{item.object | safe}}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+    {%- endmacro %}
+    
+    {% macro printConnectionsTo(connections) -%}
+    <ul class="list pl0 measure">
+        {% for groupName in connections %}
+            <h3>{{groupName}}</h3>
+            {% for item in connections[groupName] %}
+            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30" style="margin-left:2rem;">{{item.subject | safe}} -> {{item.predicate | abbreviateURI}} -> this</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+    {%- endmacro %}
+    
+    <div class="pa3 pa5-ns sans-serif">
+        <h1>Connections for {{label}}</h1>
+        Original link: <a href="{{id}}" target="_blank">{{id}}</a>
+        </br>
+        <div class="list-container">
+            <h2>Connections from this record:</h2>
+            {{printConnectionsFrom(request['from'])}}
+            <h2>Connections to this record:</h2>
+            {{printConnectionsTo(request['to'])}}
+        </div>
+    </div>
+</body>
+</html>

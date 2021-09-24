@@ -3,6 +3,8 @@ uvicorn
 sparqlwrapper
 elasticsearch
 requests
+jinja2
+aiofiles
 
 # dev
 pre-commit
