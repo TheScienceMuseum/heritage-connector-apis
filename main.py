@@ -12,6 +12,7 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from pydantic.networks import HttpUrl
 import uvicorn
@@ -224,6 +225,10 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
 @app.get("/view_connections")
 async def view_connections_single_entity(entity: str):
     """View HTML template showing connections to and from each entity in the request."""
+    entity_redirect = utils.normaliseURI(entity)
+    if entity_redirect != entity:
+        logger.debug("redirecting")
+        return RedirectResponse(url=f"/view_connections?entity={entity_redirect}")
 
     connections_request = ConnectionsRequest(
         entities=[entity],
