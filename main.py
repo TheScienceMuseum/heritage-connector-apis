@@ -8,7 +8,7 @@ import argparse
 import requests
 import json
 import re
-from typing import List
+from typing import List, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
@@ -223,8 +223,30 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
 
 
 @app.get("/view_connections")
-async def view_connections_single_entity(entity: str):
+async def view_connections_single_entity(entity: Optional[str] = None):
     """View HTML template showing connections to and from each entity in the request."""
+
+    if entity is None:
+        entry_point_uris_images = {
+            "http://www.wikidata.org/entity/Q5928": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/HendrixHoepla1967-2.jpg/220px-HendrixHoepla1967-2.jpg",  # Jimi Hendrix
+            "https://www.wikidata.org/wiki/Q35765": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Osaka_montage.jpg/220px-Osaka_montage.jpg",  # Osaka
+        }
+        entry_point_uris = [
+            utils.normaliseURI(uri) for uri in entry_point_uris_images.keys()
+        ]
+        entry_point_uris_images = {
+            utils.normaliseURI(k): v for k, v in entry_point_uris_images.items()
+        }
+        entry_point_uri_label_mapping = await (
+            get_labels(LabelsRequest(uris=entry_point_uris))
+        )
+        request = dict()
+        request["entry_points"] = entry_point_uri_label_mapping
+        request["entry_points_images"] = entry_point_uris_images
+        return templates.TemplateResponse(
+            "connections_index.html", {"request": request}
+        )
+
     entity_redirect = utils.normaliseURI(entity)
     if entity_redirect != entity:
         logger.debug("redirecting")

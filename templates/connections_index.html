@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>{{label}} - Heritage Connector</title>
+    <title>Heritage Connector Metadata Explorer</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
@@ -38,33 +38,10 @@
     </style>
 </head>
 <body>
-    {% macro printConnectionsFrom(connections) -%}
-    <ul class="list pl0 measure-wide">
-        {% for groupName in connections %}
-            <h3>{{groupName}}</h3>
-            {% for item in connections[groupName] %}
-            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30">this -> {{item.predicate | abbreviateURI}} -> {{item.object | safe}}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-    {%- endmacro %}
-    
-    {% macro printConnectionsTo(connections) -%}
-    <ul class="list pl0 measure-wide">
-        {% for groupName in connections %}
-            <h3>{{groupName}}</h3>
-            {% for item in connections[groupName] %}
-            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30"">{{item.subject | safe}} -> {{item.predicate | abbreviateURI}} -> this</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-    {%- endmacro %}
-    
     <div class="pa3 pa5-ns pt3-ns sans-serif">
         <div class="header bb b--black-30" style="overflow:hidden;">
             <div class="fl w-70 pa2">
-                <h1>Heritage Connector Metadata Explorer: <span class="dark-red">{{label}}</span></h1>
-                <a href="{{id}}" target="_blank">{{id}}</a>
+                <h1>Heritage Connector Metadata Explorer</h1>
             </div>
             <div class="fr w-30 pa4 pb2-ns pr2-ns">
             <form class="black-80" method="GET">
@@ -75,16 +52,28 @@
                 </form>
             </div>
         </div>
-        <div class="list-container">
-            <div class="fl w-50">
-            <h2>Connections <span class="purple">to</span> this record:</h2>
-            {{printConnectionsTo(request['to'])}}
-            </div>
-            <div class="fl w-50">
-            <h2>Connections <span class="blue">from</span> this record:</h2>
-            {{printConnectionsFrom(request['from'])}}
+        <div class="list-container pt2-ns">
+            <h2 class="f3 fw4 pa3 mv0">Some interesting starting points we've found...</h2>
+            <div class="cf pa2">
+            {% for uri in request['entry_points'] %}
+                <!-- <div class="ml3-ns fl br3 ba b--black-10 pa4">
+                    <div class="tc">
+                    <a class="f3 mb2 black link" href="?entity={{uri}}">
+                    <img src="{{request['entry_points_images'][uri]}}" class="h4 w4 dib" title="{{request['entry_points'][uri]}}">
+                    <h1 class="f3 mb2">{{request['entry_points'][uri]}}</a>
+                    </a>
+                    </div>
+                </div> -->
+                <div class="fl w-50 w-25-m w-10-l pa2">
+                    <a href="?entity={{uri}}" class="db link dim tc">
+                      <img src="{{request['entry_points_images'][uri]}}" alt="{{request['entry_points'][uri]}}" class="w-100 db outline black-10"/>
+                      <dl class="mt2 f4 lh-copy">
+                        <dd class="ml0 black truncate w-100">{{request['entry_points'][uri]}}</dd>
+                      </dl>
+                    </a>
+                </div>
+            {% endfor %}
             </div>
         </div>
-    </div>
 </body>
 </html>
