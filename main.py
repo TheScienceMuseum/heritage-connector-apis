@@ -230,6 +230,7 @@ async def view_connections_single_entity(entity: Optional[str] = None):
         entry_point_uris_images = {
             "http://www.wikidata.org/entity/Q5928": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/HendrixHoepla1967-2.jpg/220px-HendrixHoepla1967-2.jpg",  # Jimi Hendrix
             "https://www.wikidata.org/wiki/Q35765": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Osaka_montage.jpg/220px-Osaka_montage.jpg",  # Osaka
+            "https://www.wikidata.org/wiki/Q129864": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Indian_Rebellion_of_1857.jpg/220px-Indian_Rebellion_of_1857.jpg",  # Indian Rebellion of 1857,
         }
         entry_point_uris = [
             utils.normaliseURI(uri) for uri in entry_point_uris_images.keys()
