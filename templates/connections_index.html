@@ -44,16 +44,16 @@
                 <h1>Heritage Connector Metadata Explorer</h1>
             </div>
             <div class="fr w-30 pa4 pb2-ns pr2-ns">
-            <form class="black-80" method="GET">
+            <!-- <form class="black-80" method="GET">
                 <div class="fr-l measure w-100">
                     <label for="name" class="f6 b db mb2">Enter SMG, V&A or Wikidata URL</label>
                     <input id="name" name="entity" class="input-reset ba b--black-20 pa2 mb2 db w-100" type="text">
                     </div>
-                </form>
+                </form> -->
             </div>
         </div>
         <div class="list-container pt2-ns">
-            <h2 class="f3 fw4 pa3 mv0">Some interesting starting points we've found...</h2>
+            <h2 class="f3 fw4 pa3 mv0">Try some interesting starting points we've found, </h2>
             <div class="cf pa2">
             {% for uri in request['entry_points'] %}
                 <!-- <div class="ml3-ns fl br3 ba b--black-10 pa4">
@@ -74,6 +74,13 @@
                 </div>
             {% endfor %}
             </div>
+            <h2 class="f3 fw4 pa3 pt5 mv0">or enter a URL for a page</h2>
+            <div class="cf pa2">
+                <form class="black-80" method="GET">
+                <input id="name" name="entity" class="input-reset ba b--black-20 pa2 mb2 db w-50" type="text">
+                </form>
+            </div>
+
         </div>
 </body>
 </html>
