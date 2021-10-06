@@ -40,10 +40,13 @@
 <body>
     {% macro printConnectionsFrom(connections) -%}
     <ul class="list pl0 measure-wide">
-        {% for groupName in connections %}
-            <h3>{{groupName}}</h3>
-            {% for item in connections[groupName] %}
-            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30">this -> {{item.predicate | abbreviateURI}} -> {{item.object | safe}}</li>
+        {% for predicateGroupName in connections %}
+            <h3>{{predicateGroupName}}</h3>
+            {% for urlGroupname, urlTriples in connections[predicateGroupName].items() %}
+            <h4 class="black-70">{{urlGroupname}}</h4>
+                {% for item in urlTriples%}
+                <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30">this -> {{item.predicate | abbreviateURI}} -> {{item.object | safe}}</li>
+                {% endfor %}
             {% endfor %}
         {% endfor %}
     </ul>
@@ -51,10 +54,13 @@
     
     {% macro printConnectionsTo(connections) -%}
     <ul class="list pl0 measure-wide">
-        {% for groupName in connections %}
-            <h3>{{groupName}}</h3>
-            {% for item in connections[groupName] %}
-            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30"">{{item.subject | safe}} -> {{item.predicate | abbreviateURI}} -> this</li>
+        {% for predicateGroupName in connections %}
+            <h3>{{predicateGroupName}}</h3>
+            {% for urlGroupname, urlTriples in connections[predicateGroupName].items() %}
+            <h4 class="black-70">{{urlGroupname}}</h4>
+                {% for item in urlTriples%}
+                <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30"">{{item.subject | safe}} -> {{item.predicate | abbreviateURI}} -> this</li>
+                {% endfor %}
             {% endfor %}
         {% endfor %}
     </ul>

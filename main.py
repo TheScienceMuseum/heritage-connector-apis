@@ -5,6 +5,7 @@ To run: `python api.py`
 """
 
 import argparse
+from collections import defaultdict
 import requests
 import json
 import re
@@ -177,18 +178,15 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
     predicates_in_to = [item["predicate"] for item in flattened_connections["to"]]
 
     for group_name, abbreviated_predicates in utils.predicateManualGroups.items():
-        from_data = []
+        from_data = defaultdict(list)
 
         if group_name.startswith("Wikidata connections"):
             # if Wikidata, only include connections to other Wikidata items that are in the KG.
             # We can identify these by matching on the HTML link pattern that is used for Wikidata records which have a label (i.e. they are in the Wikidata cache, thus in the KG).
             for p in abbreviated_predicates:
                 if p in predicates_in_from:
-                    from_data += [
-                        i
-                        for i in flattened_connections["from"]
-                        if (i["predicate"] == p)
-                        and (
+                    for i in flattened_connections["from"]:
+                        if (i["predicate"] == p) and (
                             len(
                                 re.findall(
                                     r"<a href='http://www.wikidata.org/entity/Q\d+'>.+\[WD:Q\d+\]</a>",
@@ -196,28 +194,32 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
                                 )
                             )
                             > 0
-                        )
-                    ]
+                        ):
+                            from_data[utils.assignGroupToURI(i["object"])].append(i)
         else:
             for p in abbreviated_predicates:
                 if p in predicates_in_from:
-                    from_data += [
-                        i for i in flattened_connections["from"] if i["predicate"] == p
-                    ]
+                    for i in flattened_connections["from"]:
+                        if i["predicate"] == p:
+                            from_data[utils.assignGroupToURI(i["object"])].append(i)
 
         if from_data:
-            grouped_connections["from"][group_name] = from_data
+            grouped_connections["from"][group_name] = {
+                k: v for k, v in from_data.items() if v
+            }
 
-        to_data = []
+        to_data = defaultdict(list)
 
         for p in abbreviated_predicates:
             if p in predicates_in_to:
-                to_data += [
-                    i for i in flattened_connections["to"] if i["predicate"] == p
-                ]
+                for i in flattened_connections["to"]:
+                    if i["predicate"] == p:
+                        to_data[utils.assignGroupToURI(i["subject"])].append(i)
 
         if to_data:
-            grouped_connections["to"][group_name] = to_data
+            grouped_connections["to"][group_name] = {
+                k: v for k, v in to_data.items() if v
+            }
 
     return grouped_connections
 
