@@ -257,6 +257,14 @@ async def view_connections_single_entity(entity: Optional[str] = None):
             "http://www.wikidata.org/entity/Q5928": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/HendrixHoepla1967-2.jpg/220px-HendrixHoepla1967-2.jpg",  # Jimi Hendrix
             "https://www.wikidata.org/wiki/Q35765": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Osaka_montage.jpg/220px-Osaka_montage.jpg",  # Osaka
             "https://www.wikidata.org/wiki/Q129864": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Indian_Rebellion_of_1857.jpg/220px-Indian_Rebellion_of_1857.jpg",  # Indian Rebellion of 1857,
+            "https://www.wikidata.org/wiki/Q469027": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Issey_Miyake_Tokyo_2016.jpg/440px-Issey_Miyake_Tokyo_2016.jpg",  # Issey Miyake
+            "https://www.wikidata.org/wiki/Q46861": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Unknown_Tibetan_Sanskrit_Text.jpg/440px-Unknown_Tibetan_Sanskrit_Text.jpg",  # Tibetan alphabet
+            "https://www.wikidata.org/wiki/Q585777": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Aerial_View_of_Brookhaven_National_Laboratory.jpg/440px-Aerial_View_of_Brookhaven_National_Laboratory.jpg",  # Brookhaven National Laboratory
+            "https://www.wikidata.org/wiki/Q9696": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/John_F._Kennedy%2C_White_House_color_photo_portrait.jpg/440px-John_F._Kennedy%2C_White_House_color_photo_portrait.jpg",  # John F Kennedy
+            "https://www.wikidata.org/wiki/Q172763": "https://live.staticflickr.com/65535/50046568722_73000066f0_z.jpg",  # Joy Division
+            "https://www.wikidata.org/wiki/Q8577": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/15-11-05_101_Monument.jpg/440px-15-11-05_101_Monument.jpg",  # 2012 Summer Olympics
+            "https://www.wikidata.org/wiki/Q9439": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/440px-Queen_Victoria_by_Bassano.jpg",  # Queen Victoria
+            # "https://www.wikidata.org/wiki/Q37922": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Nobel2008Literature_news_conference1.jpg/440px-Nobel2008Literature_news_conference1.jpg" # Nobel Prize in Literature
         }
         entry_point_uris = [
             utils.normaliseURI(uri) for uri in entry_point_uris_images.keys()
