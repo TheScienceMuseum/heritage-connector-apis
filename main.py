@@ -99,6 +99,30 @@ async def get_connections(request: ConnectionsRequest):
             sparql.get_s_p(ent, labels=request.labels)
         )["results"]["bindings"]
 
+        for predicate_object_dict in connections_from:
+            if (
+                "collections.vam.ac.uk" in predicate_object_dict["object"]["value"]
+            ) and "objectLabel" not in predicate_object_dict:
+                object_label = utils.get_vam_object_title(
+                    predicate_object_dict["object"]["value"]
+                )
+                if object_label is not None:
+                    predicate_object_dict["objectLabel"] = dict()
+                    predicate_object_dict["objectLabel"]["type"] = "literal"
+                    predicate_object_dict["objectLabel"]["value"] = object_label
+
+        for subject_predicate_dict in connections_to:
+            if (
+                "collections.vam.ac.uk" in subject_predicate_dict["subject"]["value"]
+            ) and "subjectLabel" not in subject_predicate_dict:
+                subject_label = utils.get_vam_object_title(
+                    subject_predicate_dict["subject"]["value"]
+                )
+                if subject_label is not None:
+                    subject_predicate_dict["subjectLabel"] = dict()
+                    subject_predicate_dict["subjectLabel"]["type"] = "literal"
+                    subject_predicate_dict["subjectLabel"]["value"] = subject_label
+
         response.update(
             {
                 ent: {
@@ -286,7 +310,11 @@ async def get_labels(request: LabelsRequest):
     response = {k: None for k in request.uris}
 
     for res in results:
-        response[res["s"]["value"]] = res.get("sLabel", {}).get("value")
+        item_label = res.get("sLabel", {}).get("value")
+        if not item_label and "collections.vam.ac.uk/item" in res["s"]["value"]:
+            item_label = utils.get_vam_object_title(res["s"]["value"])
+
+        response[res["s"]["value"]] = item_label
 
     return response
 

@@ -3,6 +3,7 @@ Utils and filters for use with jinja2. Used in `main.py`.
 """
 
 import re
+import requests
 from api_utils import logging
 
 logger = logging.get_logger(__name__)
@@ -184,11 +185,12 @@ def normaliseURI(uri: str) -> str:
             return uri
         elif "https://journal.sciencemuseum.ac.uk" in uri:
             return re.sub("https", "http", uri)
-        elif "https://collections.vam.ac.uk/item" in uri:
-            mod_uri = re.sub("https", "http", uri)
-            return re.findall(
-                r"(http://collections.vam.ac.uk/item/[A-Za-z\d]+)/", mod_uri
-            )[0]
+        elif "collections.vam.ac.uk/item" in uri:
+            if "https" in uri:
+                uri = re.sub("https", "http", uri)
+            return re.findall(r"(http://collections.vam.ac.uk/item/[A-Za-z\d]+)/", uri)[
+                0
+            ]
         elif uri.startswith("https://www.wikidata.org/wiki/"):
             return re.sub(
                 "https://www.wikidata.org/wiki/", "http://www.wikidata.org/entity/", uri
@@ -221,3 +223,31 @@ def assignGroupToURI(uri: str) -> str:
         return "Wikidata"
     else:
         return "Literal (raw value)"
+
+
+def get_vam_object_title(object_url) -> str:
+    """"""
+    object_url = normaliseURI(object_url)
+    api_url = (
+        re.sub("collections.vam.ac.uk/item", "api.vam.ac.uk/v2/object", object_url)
+        + "?response_format=json"
+    )
+    headers = {
+        "Accept": "application/json",
+    }
+    response = requests.get(api_url, headers=headers)
+
+    if response.status_code == 200:
+        response_json = response.json()
+        titles = response_json["record"].get("titles", [])
+        if titles:
+            generic_titles = [
+                v["title"] for v in titles if v["type"] == "generic title"
+            ]
+            if generic_titles:
+                return generic_titles[0]
+        else:
+            return response_json["record"].get("objectType")
+
+    else:
+        return None
