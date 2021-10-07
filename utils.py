@@ -188,7 +188,7 @@ def normaliseURI(uri: str) -> str:
         elif "collections.vam.ac.uk/item" in uri:
             if "https" in uri:
                 uri = re.sub("https", "http", uri)
-            return re.findall(r"(http://collections.vam.ac.uk/item/[A-Za-z\d]+)/", uri)[
+            return re.findall(r"(http://collections.vam.ac.uk/item/[A-Za-z\d]+)", uri)[
                 0
             ]
         elif uri.startswith("https://www.wikidata.org/wiki/"):
