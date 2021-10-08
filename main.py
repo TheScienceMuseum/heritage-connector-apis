@@ -81,6 +81,7 @@ async def get_neighbours(request: NeighboursRequest):
 class ConnectionsRequest(BaseModel):
     entities: List[str]
     labels: bool = False
+    limit: int = None
 
 
 @app.get("/connections")
@@ -92,11 +93,11 @@ async def get_connections(request: ConnectionsRequest):
 
     for ent in request.entities:
         connections_from = sparql_connector.get_sparql_results(
-            sparql.get_p_o(ent, labels=request.labels)
+            sparql.get_p_o(ent, labels=request.labels, limit=request.limit)
         )["results"]["bindings"]
 
         connections_to = sparql_connector.get_sparql_results(
-            sparql.get_s_p(ent, labels=request.labels)
+            sparql.get_s_p(ent, labels=request.labels, limit=request.limit)
         )["results"]["bindings"]
 
         for predicate_object_dict in connections_from:
@@ -252,6 +253,8 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
 async def view_connections_single_entity(entity: Optional[str] = None):
     """View HTML template showing connections to and from each entity in the request."""
 
+    CONNECTIONS_LIMIT = 150
+
     if entity is None:
         entry_point_uris_images = {
             "http://www.wikidata.org/entity/Q5928": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/HendrixHoepla1967-2.jpg/220px-HendrixHoepla1967-2.jpg",  # Jimi Hendrix
@@ -288,8 +291,7 @@ async def view_connections_single_entity(entity: Optional[str] = None):
         return RedirectResponse(url=f"/view_connections?entity={entity_redirect}")
 
     connections_request = ConnectionsRequest(
-        entities=[entity],
-        labels=True,
+        entities=[entity], labels=True, limit=CONNECTIONS_LIMIT
     )
     labels_request = LabelsRequest(uris=[entity])
     label_response = await get_labels(labels_request)

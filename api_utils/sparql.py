@@ -3,28 +3,38 @@
 from typing import List
 
 
-def get_p_o(h: str, labels: bool):
+def get_p_o(h: str, labels: bool, limit: int = None):
     if labels:
-        return f"""
+        query = f"""
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             SELECT * WHERE {{
                 <{h}> ?predicate ?object.
                 OPTIONAL {{?object rdfs:label ?objectLabel}}.
             }}"""
     else:
-        return f"""SELECT * WHERE {{<{h}> ?predicate ?object.}}"""
+        query = f"""SELECT * WHERE {{<{h}> ?predicate ?object.}}"""
+
+    if limit:
+        query += f"LIMIT {limit}"
+
+    return query
 
 
-def get_s_p(h: str, labels: bool):
+def get_s_p(h: str, labels: bool, limit: int = None):
     if labels:
-        return f"""
+        query = f"""
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             SELECT * WHERE {{
                 ?subject ?predicate <{h}>.
                 OPTIONAL {{?subject rdfs:label ?subjectLabel}}.
             }}"""
     else:
-        return f"""SELECT * WHERE {{?subject ?predicate <{h}>.}}"""
+        query = f"""SELECT * WHERE {{?subject ?predicate <{h}>.}}"""
+
+    if limit:
+        query += f"LIMIT {limit}"
+
+    return query
 
 
 def get_labels(entities: List[str]):
