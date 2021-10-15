@@ -68,6 +68,14 @@
         {% endfor %}
     </ul>
     {%- endmacro %}
+
+    {% macro printNeighbours(neighbours) -%}
+    <ul class="list pl0 measure-wide">
+        {% for n in neighbours %}
+            <li class="lh-copy pv2 ba bl-0 bt-0 br-0 b--dotted b--black-30"">{{n[0] | safe}} ({{n[1]}}%)</li>
+        {% endfor %}
+    </ul>
+    {%- endmacro %}
     
     <div class="pa3 pa5-ns pt3-ns sans-serif">
         <div class="header bb b--black-30" style="overflow:hidden;">
@@ -88,13 +96,19 @@
             </div>
         </div>
         <div class="list-container">
-            <div class="fl w-50">
+            <div class="fl w-75">
+            <div class="fl w-50 pa3 pt0">
             <h2>Connections <span class="purple">to</span> this record:</h2>
             {{printConnectionsTo(request['to'])}}
             </div>
-            <div class="fl w-50">
+            <div class="fl w-50 pa3 pt0">
             <h2>Connections <span class="blue">from</span> this record:</h2>
             {{printConnectionsFrom(request['from'])}}
+            </div>
+            </div>
+            <div class="fl w-25 pa3 pt0">
+            <h2>Related records:</h2>
+            {{printNeighbours(neighbours)}}
             </div>
         </div>
     </div>

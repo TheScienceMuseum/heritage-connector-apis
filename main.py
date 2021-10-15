@@ -249,6 +249,36 @@ def group_flattened_connections(flattened_connections: dict) -> dict:
     return grouped_connections
 
 
+async def process_neighbours_output(neighbours: List[list]):
+    """
+    - convert distances to similarities
+    - convert URLs to links with labels and abbreviated URLs
+    """
+
+    labels_request = LabelsRequest(
+        uris=[i[0] for i in neighbours if i[0].startswith("http")]
+    )
+    uri_label_mapping = await get_labels(labels_request)
+
+    neighbours_out = []
+
+    for (neighbour_uri_or_literal, neighbour_distance) in neighbours:
+        neighbour_similarity_percent = round((1 - neighbour_distance) * 100, 1)
+
+        if neighbour_uri_or_literal.startswith("http") and (
+            neighbour_uri_or_literal in uri_label_mapping.keys()
+        ):
+            neighbour_display = f"<a href='?entity={utils.normaliseURI(neighbour_uri_or_literal)}'>{uri_label_mapping[neighbour_uri_or_literal]} [{utils.abbreviateURI(neighbour_uri_or_literal)}]</a>"
+        elif neighbour_uri_or_literal.startswith("http"):
+            neighbour_display = f"<a href='?entity={utils.normaliseURI(neighbour_uri_or_literal)}'>{utils.abbreviateURI(neighbour_uri_or_literal)}</a>"
+        else:
+            neighbour_display = neighbour_uri_or_literal
+
+        neighbours_out.append([neighbour_display, neighbour_similarity_percent])
+
+    return neighbours_out
+
+
 @app.get("/view_connections")
 async def view_connections_single_entity(entity: Optional[str] = None):
     """View HTML template showing connections to and from each entity in the request."""
@@ -297,13 +327,24 @@ async def view_connections_single_entity(entity: Optional[str] = None):
     label_response = await get_labels(labels_request)
     ent_label = label_response[entity]
 
+    neighbours_request = NeighboursRequest(entities=[entity], k=30)
+    neighbours_response = await get_neighbours(neighbours_request)
+    neighbours_response_to_display = await process_neighbours_output(
+        neighbours_response[entity]
+    )
+
     connections = await get_connections(connections_request)
     connections_processed = flatten_connections_response(connections, entity)
     grouped_connections = group_flattened_connections(connections_processed)
 
     return templates.TemplateResponse(
         "connections.html",
-        {"request": grouped_connections, "id": entity, "label": ent_label},
+        {
+            "request": grouped_connections,
+            "neighbours": neighbours_response_to_display,
+            "id": entity,
+            "label": ent_label,
+        },
     )
 
 
