@@ -269,12 +269,21 @@ async def process_neighbours_output(neighbours: List[list]):
             neighbour_uri_or_literal in uri_label_mapping.keys()
         ):
             neighbour_display = f"<a href='?entity={utils.normaliseURI(neighbour_uri_or_literal)}'>{uri_label_mapping[neighbour_uri_or_literal]} [{utils.abbreviateURI(neighbour_uri_or_literal)}]</a>"
+
+            # Only add related URIs with labels that are not lowercase
+            if (
+                isinstance(uri_label_mapping[neighbour_uri_or_literal], str)
+                and uri_label_mapping[neighbour_uri_or_literal]
+                != uri_label_mapping[neighbour_uri_or_literal].lower()
+            ):
+                neighbours_out.append([neighbour_display, neighbour_similarity_percent])
+
         elif neighbour_uri_or_literal.startswith("http"):
             neighbour_display = f"<a href='?entity={utils.normaliseURI(neighbour_uri_or_literal)}'>{utils.abbreviateURI(neighbour_uri_or_literal)}</a>"
+            neighbours_out.append([neighbour_display, neighbour_similarity_percent])
         else:
             neighbour_display = neighbour_uri_or_literal
-
-        neighbours_out.append([neighbour_display, neighbour_similarity_percent])
+            neighbours_out.append([neighbour_display, neighbour_similarity_percent])
 
     return neighbours_out
 
