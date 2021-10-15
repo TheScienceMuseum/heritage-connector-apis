@@ -346,6 +346,8 @@ async def view_connections_single_entity(entity: Optional[str] = None):
     connections_processed = flatten_connections_response(connections, entity)
     grouped_connections = group_flattened_connections(connections_processed)
 
+    entity = utils.vam_api_url_to_collection_url(entity)
+
     return templates.TemplateResponse(
         "connections.html",
         {

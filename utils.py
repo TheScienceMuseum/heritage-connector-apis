@@ -270,3 +270,21 @@ def get_wikidata_entity_label(wiki_url) -> str:
 
     else:
         return None
+
+
+def vam_api_url_to_collection_url(api_url) -> str:
+    """
+    Return a human-readable collection URL, given a machine-readable API URL.
+    Returns original URL if `api_url` doesn't look like a V&A API path.
+
+    This has only been tested for searches and API calls ?id_person and ?id_organisation query strings.
+    """
+
+    if "api.vam.ac.uk" in api_url:
+        return re.sub(
+            r"https://api.vam.ac.uk/v2/objects/",
+            r"https://collections.vam.ac.uk/",
+            api_url,
+        )
+    else:
+        return api_url
