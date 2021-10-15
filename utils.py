@@ -251,3 +251,22 @@ def get_vam_object_title(object_url) -> str:
 
     else:
         return None
+
+
+def get_wikidata_entity_label(wiki_url) -> str:
+    qid = re.findall(r"Q\d+", wiki_url)[0]
+    api_url = f"https://www.wikidata.org/w/api.php?action=wbgetentities&props=labels&ids={qid}&format=json"
+    response = requests.get(api_url)
+
+    if response.status_code == 200:
+        response_json = response.json()
+        return (
+            response_json["entities"]
+            .get(qid, {})
+            .get("labels", {})
+            .get("en", {})
+            .get("value", None)
+        )
+
+    else:
+        return None

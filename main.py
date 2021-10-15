@@ -369,10 +369,18 @@ async def get_labels(request: LabelsRequest):
     ]["bindings"]
     response = {k: None for k in request.uris}
 
+    # TODO: this could be sped up by bundling all wikidata label requests into one list, and modifying
+    # `utils.get_wikidata_entity_label` to send up to 50 QIDs at a time to the wbgetentities API.
+
     for res in results:
         item_label = res.get("sLabel", {}).get("value")
-        if not item_label and "collections.vam.ac.uk/item" in res["s"]["value"]:
-            item_label = utils.get_vam_object_title(res["s"]["value"])
+        if not item_label:
+            if "collections.vam.ac.uk/item" in res["s"]["value"]:
+                item_label = utils.get_vam_object_title(res["s"]["value"])
+            if ("wikidata.org" in res["s"]["value"]) and re.findall(
+                r"Q\d+", res["s"]["value"]
+            ):
+                item_label = utils.get_wikidata_entity_label(res["s"]["value"])
 
         response[res["s"]["value"]] = item_label
 
