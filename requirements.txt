@@ -5,6 +5,7 @@ elasticsearch
 requests
 jinja2
 aiofiles
+python-dotenv
 
 # dev
 pre-commit

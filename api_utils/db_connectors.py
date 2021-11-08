@@ -6,7 +6,6 @@ import urllib
 from elasticsearch import Elasticsearch
 from SPARQLWrapper import SPARQLWrapper, JSON
 from api_utils import logging
-from api_utils.config import config
 
 logger = logging.get_logger(__name__)
 
@@ -33,8 +32,8 @@ def get_elasticsearch_connector(
 
 
 class SPARQLConnector:
-    def __init__(self):
-        self.endpoint = config.SPARQL_ENDPOINT
+    def __init__(self, endpoint):
+        self.endpoint = endpoint
 
     def get_sparql_results(self, query: str) -> dict:
         """

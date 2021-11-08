@@ -17,13 +17,15 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from pydantic.networks import HttpUrl
 import uvicorn
-from api_utils import config, logging, db_connectors, sparql
+from api_utils import logging, db_connectors, sparql
+from dotenv import load_dotenv
+import os
 import utils
 
 logger = logging.get_logger(__name__)
-cfg = config.config
+load_dotenv()
 app = FastAPI()
-sparql_connector = db_connectors.SPARQLConnector()
+sparql_connector = db_connectors.SPARQLConnector(endpoint=os.environ["SPARQL_ENDPOINT"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,7 +62,7 @@ class NeighboursRequest(BaseModel):
 @app.get("/neighbours")
 @app.post("/neighbours")
 async def get_neighbours(request: NeighboursRequest):
-    neighbours_api_endpoint = cfg.NEIGHBOURS_API
+    neighbours_api_endpoint = os.environ["NEIGHBOURS_API"]
     body = json.dumps(
         {
             "entities": request.entities,
