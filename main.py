@@ -23,9 +23,6 @@ import utils
 logger = logging.get_logger(__name__)
 cfg = config.config
 app = FastAPI()
-es_connector = db_connectors.ElasticsearchConnector(
-    cfg.ELASTIC_SEARCH_CLUSTER, cfg.ELASTIC_SEARCH_USER, cfg.ELASTIC_SEARCH_PASSWORD
-)
 sparql_connector = db_connectors.SPARQLConnector()
 
 app.add_middleware(
