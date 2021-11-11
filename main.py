@@ -45,22 +45,11 @@ async def startup():
     pass
 
 
-@app.get(
-    "/predicate_object/by_uri",
-    response_model=List[data_models.SPARQLPredicateObject],
-    response_model_exclude_unset=True,
-    deprecated=True,
-)
 @app.post(
     "/predicate_object/by_uri",
     response_model=List[data_models.SPARQLPredicateObject],
     response_model_exclude_unset=True,
     deprecated=True,
-)
-@app.get(
-    "/predicate_object",
-    response_model=List[data_models.SPARQLPredicateObject],
-    response_model_exclude_unset=True,
 )
 @app.post(
     "/predicate_object",
@@ -70,13 +59,11 @@ async def startup():
 async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     """Get all the predicate-object pairs for an entity with a specific URI. Optionally return the labels of all objects which have labels."""
     # TODO: return correct error if URL not in database
-    # TODO: re-enable POST by adding data model as in /neighbours and /labels
     return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
         "results"
     ]["bindings"]
 
 
-@app.get("/neighbours", response_model=data_models.NeighboursResponse)
 @app.post("/neighbours", response_model=data_models.NeighboursResponse)
 async def get_neighbours(request: data_models.NeighboursRequest):
     """
@@ -114,11 +101,6 @@ async def get_neighbours(request: data_models.NeighboursRequest):
     return response.json()
 
 
-@app.get(
-    "/connections",
-    response_model=Dict[str, data_models.EntityConnections],
-    response_model_exclude_unset=True,
-)
 @app.post(
     "/connections",
     response_model=Dict[str, data_models.EntityConnections],
@@ -398,7 +380,6 @@ async def view_connections_single_entity(entity: Optional[str] = None):
     )
 
 
-@app.get("/labels", response_model=data_models.LabelsResponse)
 @app.post("/labels", response_model=data_models.LabelsResponse)
 async def get_labels(request: data_models.LabelsRequest):
     """Get labels for several entities represented by their URIs (i.e. literals have no label). Returns a dictionary mapping each input entity to the label if it exists, and `null` otherwise."""
