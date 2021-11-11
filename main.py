@@ -9,18 +9,19 @@ from collections import defaultdict
 import requests
 import json
 import re
-from typing import List, Optional
+from typing import List, Optional, Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
 from pydantic.networks import HttpUrl
 import uvicorn
 from api_utils import logging, db_connectors, sparql
 from dotenv import load_dotenv
 import os
 import utils
+
+import data_models
 
 logger = logging.get_logger(__name__)
 load_dotenv()
@@ -44,26 +45,47 @@ async def startup():
     pass
 
 
-@app.get("/predicate_object/by_uri", deprecated=True)
-@app.post("/predicate_object/by_uri", deprecated=True)
-@app.get("/predicate_object")
-@app.post("/predicate_object")
+@app.post(
+    "/predicate_object/by_uri",
+    response_model=List[data_models.SPARQLPredicateObject],
+    response_model_exclude_unset=True,
+    deprecated=True,
+)
+@app.post(
+    "/predicate_object",
+    response_model=List[data_models.SPARQLPredicateObject],
+    response_model_exclude_unset=True,
+)
 async def get_predicate_object(uri: HttpUrl, labels: bool = False):
+    """Get all the predicate-object pairs for an entity with a specific URI. Optionally return the labels of all objects which have labels."""
     # TODO: return correct error if URL not in database
-    # TODO: re-enable POST by adding data model as in /neighbours and /labels
     return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
         "results"
     ]["bindings"]
 
 
-class NeighboursRequest(BaseModel):
-    entities: List[str]
-    k: int
+@app.post("/neighbours", response_model=data_models.NeighboursResponse)
+async def get_neighbours(request: data_models.NeighboursRequest):
+    """
+    Return `k` nearest neighbours in embedding space for each entity specified in `entities`. Scores returned are *distances*: to get *similarities*, calculate `1 - score`.
 
+    Response format:
 
-@app.get("/neighbours")
-@app.post("/neighbours")
-async def get_neighbours(request: NeighboursRequest):
+    ```
+    {
+        "input_entity_1": [
+            ["nearest_neighbour_id", score],
+            ["nearest_neighbour_id", score],
+            ["nearest_neighbour_id", score],
+            ...
+        ],
+        "input_entity_2: [
+            ...
+        ]
+    }
+    ```
+    """
+
     neighbours_api_endpoint = os.environ["NEIGHBOURS_API"]
     body = json.dumps(
         {
@@ -79,16 +101,14 @@ async def get_neighbours(request: NeighboursRequest):
     return response.json()
 
 
-class ConnectionsRequest(BaseModel):
-    entities: List[str]
-    labels: bool = False
-    limit: int = None
-
-
-@app.get("/connections")
-@app.post("/connections")
-async def get_connections(request: ConnectionsRequest):
-    """Get connections from or to each entity in the request."""
+@app.post(
+    "/connections",
+    response_model=Dict[str, data_models.EntityConnections],
+    response_model_exclude_unset=True,
+)
+async def get_connections(request: data_models.ConnectionsRequest):
+    """Get connections *from* and *to* each entity in the request.
+    Connections *to* are all the subject-predicate pairs where the entity is the object, and connections *from* are all the predicate-object pairs where the entity is the subject."""
 
     response = {}
 
@@ -256,7 +276,7 @@ async def process_neighbours_output(neighbours: List[list]):
     - convert URLs to links with labels and abbreviated URLs
     """
 
-    labels_request = LabelsRequest(
+    labels_request = data_models.LabelsRequest(
         uris=[i[0] for i in neighbours if i[0].startswith("http")]
     )
     uri_label_mapping = await get_labels(labels_request)
@@ -289,7 +309,7 @@ async def process_neighbours_output(neighbours: List[list]):
     return neighbours_out
 
 
-@app.get("/view_connections")
+@app.get("/view_connections", include_in_schema=False)
 async def view_connections_single_entity(entity: Optional[str] = None):
     """View HTML template showing connections to and from each entity in the request."""
 
@@ -316,7 +336,7 @@ async def view_connections_single_entity(entity: Optional[str] = None):
             utils.normaliseURI(k): v for k, v in entry_point_uris_images.items()
         }
         entry_point_uri_label_mapping = await (
-            get_labels(LabelsRequest(uris=entry_point_uris))
+            get_labels(data_models.LabelsRequest(uris=entry_point_uris))
         )
         request = dict()
         request["entry_points"] = entry_point_uri_label_mapping
@@ -330,14 +350,14 @@ async def view_connections_single_entity(entity: Optional[str] = None):
         logger.debug("redirecting")
         return RedirectResponse(url=f"/view_connections?entity={entity_redirect}")
 
-    connections_request = ConnectionsRequest(
+    connections_request = data_models.ConnectionsRequest(
         entities=[entity], labels=True, limit=CONNECTIONS_LIMIT
     )
-    labels_request = LabelsRequest(uris=[entity])
+    labels_request = data_models.LabelsRequest(uris=[entity])
     label_response = await get_labels(labels_request)
     ent_label = label_response[entity]
 
-    neighbours_request = NeighboursRequest(entities=[entity], k=30)
+    neighbours_request = data_models.NeighboursRequest(entities=[entity], k=30)
     neighbours_response = await get_neighbours(neighbours_request)
     neighbours_response_to_display = await process_neighbours_output(
         neighbours_response[entity]
@@ -360,13 +380,9 @@ async def view_connections_single_entity(entity: Optional[str] = None):
     )
 
 
-class LabelsRequest(BaseModel):
-    uris: List[HttpUrl]
-
-
-@app.get("/labels")
-@app.post("/labels")
-async def get_labels(request: LabelsRequest):
+@app.post("/labels", response_model=data_models.LabelsResponse)
+async def get_labels(request: data_models.LabelsRequest):
+    """Get labels for several entities represented by their URIs (i.e. literals have no label). Returns a dictionary mapping each input entity to the label if it exists, and `null` otherwise."""
     results = sparql_connector.get_sparql_results(sparql.get_labels(request.uris))[
         "results"
     ]["bindings"]
