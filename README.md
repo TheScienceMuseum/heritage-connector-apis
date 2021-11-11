@@ -17,5 +17,5 @@ ELASTIC_SEARCH_USER=<username>
 ELASTIC_SEARCH_PASSWORD=<secure-password>
 ELASTIC_SEARCH_INDEX=heritageconnector
 ELASTIC_SEARCH_WIKI_INDEX=wikidump
-NEIGHBOURS_API=<endpoint for nearest neighbours api in heritage-connector-vectors>
+VECTORS_API=<endpoint for vectors apis in heritage-connector-vectors>
 ```

@@ -11,6 +11,11 @@ class NeighboursRequest(BaseModel):
     k: int = 10
 
 
+class DistanceRequest(BaseModel):
+    entity_a: str
+    entity_b: str
+
+
 class ConnectionsRequest(BaseModel):
     entities: List[str]
     labels: bool = False

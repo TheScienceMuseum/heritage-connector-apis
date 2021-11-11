@@ -86,7 +86,7 @@ async def get_neighbours(request: data_models.NeighboursRequest):
     ```
     """
 
-    neighbours_api_endpoint = os.environ["NEIGHBOURS_API"]
+    neighbours_api_endpoint = f"{os.environ['VECTORS_API']}/neighbours"
     body = json.dumps(
         {
             "entities": request.entities,
@@ -97,6 +97,26 @@ async def get_neighbours(request: data_models.NeighboursRequest):
         "Content-Type": "application/json",
     }
     response = requests.post(neighbours_api_endpoint, headers=headers, data=body)
+
+    return response.json()
+
+
+@app.post("/distance", response_model=float)
+async def get_distance(request: data_models.DistanceRequest):
+    """Return the distance between two vectors. A 'similarity' score can be calculated as `1-distance`."""
+
+    distance_api_endpoint = f"{os.environ['VECTORS_API']}/distance"
+    body = json.dumps(
+        {
+            "entity_a": request.entity_a,
+            "entity_b": request.entity_b,
+        }
+    )
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(distance_api_endpoint, headers=headers, data=body)
 
     return response.json()
 
