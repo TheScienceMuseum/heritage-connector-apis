@@ -289,7 +289,7 @@ async def process_neighbours_output(neighbours: List[list]):
     return neighbours_out
 
 
-@app.get("/view_connections")
+@app.get("/view_connections", include_in_schema=False)
 async def view_connections_single_entity(entity: Optional[str] = None):
     """View HTML template showing connections to and from each entity in the request."""
 
