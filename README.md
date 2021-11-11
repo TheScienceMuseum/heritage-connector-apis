@@ -6,11 +6,16 @@ APIs for the Heritage Connector project
 * set up (install requirements and pre-commit hooks): `make init`
 * run: `python main.py`
 
-**Config:**
+**Config/environment:**
 
-All config is stored in `config.ini`, which is the same as in the heritage-connector repo, with the addition of:
+All config is stored in `.env`.
 
-``` ini
-[APIs]
-NEIGHBOURS_API = <endpoint for nearest neighbours api in heritage-connector-vectors>
+``` env
+SPARQL_ENDPOINT=<public-sparql-endpoint>
+ELASTIC_SEARCH_CLUSTER=<elastic-cluster>
+ELASTIC_SEARCH_USER=<username>
+ELASTIC_SEARCH_PASSWORD=<secure-password>
+ELASTIC_SEARCH_INDEX=heritageconnector
+ELASTIC_SEARCH_WIKI_INDEX=wikidump
+NEIGHBOURS_API=<endpoint for nearest neighbours api in heritage-connector-vectors>
 ```
