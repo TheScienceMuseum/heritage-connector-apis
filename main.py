@@ -59,9 +59,9 @@ async def startup():
 async def get_predicate_object(uri: HttpUrl, labels: bool = False):
     """Get all the predicate-object pairs for an entity with a specific URI. Optionally return the labels of all objects which have labels."""
     # TODO: return correct error if URL not in database
-    return sparql_connector.get_sparql_results(sparql.get_p_o(uri, labels=labels))[
-        "results"
-    ]["bindings"]
+    return sparql_connector.get_sparql_results(
+        sparql.get_p_o(utils.normaliseURI(uri), labels=labels)
+    )["results"]["bindings"]
 
 
 @app.post("/neighbours", response_model=data_models.NeighboursResponse)
@@ -86,10 +86,12 @@ async def get_neighbours(request: data_models.NeighboursRequest):
     ```
     """
 
+    entities_normalised = [utils.normaliseURI(uri) for uri in request.entities]
+
     neighbours_api_endpoint = f"{os.environ['VECTORS_API']}/neighbours"
     body = json.dumps(
         {
-            "entities": request.entities,
+            "entities": entities_normalised,
             "k": request.k,
         }
     )
@@ -108,8 +110,8 @@ async def get_distance(request: data_models.DistanceRequest):
     distance_api_endpoint = f"{os.environ['VECTORS_API']}/distance"
     body = json.dumps(
         {
-            "entity_a": request.entity_a,
-            "entity_b": request.entity_b,
+            "entity_a": utils.normaliseURI(request.entity_a),
+            "entity_b": utils.normaliseURI(request.entity_b),
         }
     )
     headers = {
@@ -133,12 +135,13 @@ async def get_connections(request: data_models.ConnectionsRequest):
     response = {}
 
     for ent in request.entities:
+        ent_normalised = utils.normaliseURI(ent)
         connections_from = sparql_connector.get_sparql_results(
-            sparql.get_p_o(ent, labels=request.labels, limit=request.limit)
+            sparql.get_p_o(ent_normalised, labels=request.labels, limit=request.limit)
         )["results"]["bindings"]
 
         connections_to = sparql_connector.get_sparql_results(
-            sparql.get_s_p(ent, labels=request.labels, limit=request.limit)
+            sparql.get_s_p(ent_normalised, labels=request.labels, limit=request.limit)
         )["results"]["bindings"]
 
         for predicate_object_dict in connections_from:
@@ -403,9 +406,13 @@ async def view_connections_single_entity(entity: Optional[str] = None):
 @app.post("/labels", response_model=data_models.LabelsResponse)
 async def get_labels(request: data_models.LabelsRequest):
     """Get labels for several entities represented by their URIs (i.e. literals have no label). Returns a dictionary mapping each input entity to the label if it exists, and `null` otherwise."""
-    results = sparql_connector.get_sparql_results(sparql.get_labels(request.uris))[
-        "results"
-    ]["bindings"]
+
+    uris_normalised_to_uri_mapping = {
+        utils.normaliseURI(uri): uri for uri in request.uris
+    }
+    results = sparql_connector.get_sparql_results(
+        sparql.get_labels(uris_normalised_to_uri_mapping.keys())
+    )["results"]["bindings"]
     response = {k: None for k in request.uris}
 
     # TODO: this could be sped up by bundling all wikidata label requests into one list, and modifying
@@ -421,7 +428,8 @@ async def get_labels(request: data_models.LabelsRequest):
             ):
                 item_label = utils.get_wikidata_entity_label(res["s"]["value"])
 
-        response[res["s"]["value"]] = item_label
+        # Response is keyed by URIs in request rather than normalised URIs
+        response[uris_normalised_to_uri_mapping[res["s"]["value"]]] = item_label
 
     return response
 
