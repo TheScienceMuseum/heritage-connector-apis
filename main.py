@@ -103,7 +103,7 @@ async def get_neighbours(request: data_models.NeighboursRequest):
 
 @app.post("/distance", response_model=float)
 async def get_distance(request: data_models.DistanceRequest):
-    """Return the distance between two vectors. A 'similarity' score can be calculated as `1-distance`."""
+    """Return the distance between two entities, represented by their KG embeddings vectors. A 'similarity' score can be calculated as `1-distance`."""
 
     distance_api_endpoint = f"{os.environ['VECTORS_API']}/distance"
     body = json.dumps(
