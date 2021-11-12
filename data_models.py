@@ -65,4 +65,4 @@ class ConnectionsResponse(BaseModel):
 
 
 class LabelsResponse(BaseModel):
-    __root__: Dict[str, str]
+    __root__: Dict[str, Union[str, None]]
